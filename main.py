@@ -1,81 +1,116 @@
 import streamlit as st
-import datetime
 import time
 
-# Configurações de Acessibilidade e Identidade
-st.set_page_config(page_title="Amigo do Autista", page_icon="🧩", layout="centered")
+# 1. Configuração de Design Sensorial (Cores Suaves e Tipografia Grande)
+st.set_page_config(page_title="CompraCalma", page_icon="🧩", layout="centered")
 
-# Estilo visual calmo para evitar sobrecarga sensorial
 st.markdown("""
     <style>
-    .stApp { background-color: #f8fafc; }
-    .card-seguro { 
-        padding: 20px; border-radius: 12px; background-color: #ffffff; 
-        border: 1px solid #e2e8f0; margin-bottom: 20px;
+    .stApp { background-color: #F0F4F8; } /* Azul acinzentado calmo */
+    .big-button { 
+        background-color: #4A90E2; color: white !important; 
+        padding: 30px; border-radius: 15px; text-align: center;
+        font-size: 24px; font-weight: bold; margin: 20px 0;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-    .nota-legal { font-size: 0.8em; color: #718096; margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 10px; }
-    h1, h2, h3 { color: #1a365d; }
+    .card-mercado {
+        background: white; padding: 20px; border-radius: 10px;
+        border-left: 5px solid #4A90E2; margin-bottom: 10px;
+    }
+    h1, h2 { color: #1A365D; font-family: sans-serif; }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🧩 Amigo do Autista")
-st.markdown("### *Sua paz vale mais que qualquer fila.*")
+# --- NAVEGAÇÃO SIMPLIFICADA ---
+if 'passo' not in st.session_state:
+    st.session_state.passo = 'inicial'
 
-# Mensagem de Propósito e Transparência
-st.markdown("""
-<div class="card-seguro">
-    <h4>💙 Nossa Missão</h4>
-    <p>O mercado pode ser hostil para autistas e famílias atípicas. 
-    <b>Nós usamos inteligência de dados para encontrar o melhor preço global em Rio das Ostras.</b> 
-    Você paga o valor justo e recebe tudo em casa em uma única entrega oficial do mercado selecionado.</p>
-</div>
-""", unsafe_allow_html=True)
+# --- TELA 1: INICIAL ---
+if st.session_state.passo == 'inicial':
+    st.title("🧩 CompraCalma")
+    st.write("Refaça sua compra com um clique, sem barulho e sem estresse.")
+    
+    if st.button("📷 ESCANEAR QR DA NOTA (NFCe)", use_container_width=True):
+        st.session_state.passo = 'escaneamento'
+        st.rerun()
 
-# Aviso de Logística Única (Para evitar múltiplos fretes)
-st.info("💡 **Entrega Otimizada:** Selecionamos sempre um **único estabelecimento** para sua lista inteira. Isso garante que você receba apenas um entregador e pague apenas **uma taxa de deslocamento**.")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.button("🧾 Histórico", use_container_width=True)
+    with col2:
+        st.button("🛒 Compra Mensal", use_container_width=True)
 
-st.divider()
+# --- TELA 2: ESCANEAMENTO (Simulação de QR) ---
+elif st.session_state.passo == 'escaneamento':
+    st.subheader("📷 Posicione o QR Code")
+    st.info("Aponte a câmera para o código quadrado na parte de baixo da sua nota fiscal.")
+    
+    # Simulador de leitura bem-sucedida
+    if st.button("Simular Leitura Correta (Verde ✅)"):
+        with st.spinner("Lendo produtos da NFCe..."):
+            time.sleep(2)
+            st.session_state.passo = 'produtos'
+            st.rerun()
+    
+    if st.button("Voltar"):
+        st.session_state.passo = 'inicial'
+        st.rerun()
 
-# Entrada de Dados
-col1, col2 = st.columns(2)
-with col1:
-    valor_referencia = st.number_input("Valor total da última nota (R$)", min_value=0.0, value=200.0)
-    chave = st.text_input("Chave Mestre (Privado)", type="password")
+# --- TELA 3: PRODUTOS DETECTADOS ---
+elif st.session_state.passo == 'produtos':
+    st.subheader("📋 Itens Detectados")
+    st.write("Confirme se está tudo certo:")
+    
+    itens = ["Arroz 5kg", "Feijão 1kg", "Leite 1L", "Ovos 30un", "Frango 1kg"]
+    for item in itens:
+        col_a, col_b = st.columns([3, 1])
+        col_a.write(f"✅ {item}")
+        if col_b.button("❌", key=item):
+            st.toast(f"{item} removido")
 
-with col2:
-    st.write("**Logística Rio das Ostras**")
-    st.success("☀️ Operação Normal: Entregas sem atrasos hoje.")
-    previsao = "60-90 min"
+    st.divider()
+    if st.button("🔍 COMPARAR PREÇOS NOS MERCADOS", use_container_width=True):
+        st.session_state.passo = 'comparacao'
+        st.rerun()
 
-# Lógica de Cálculo (Otimização por Mercado Único)
-# Simulamos a busca pelo mercado que oferece a melhor cesta completa
-preco_custo_estimado = valor_referencia * 0.85 
-taxa_entrega_mercado = 15.00 # Taxa única oficial do mercado
+# --- TELA 4: COMPARAÇÃO DE MERCADOS ---
+elif st.session_state.passo == 'comparacao':
+    st.subheader("🛒 Melhor Opção para Rio das Ostras")
+    
+    # Mercado A (Vencedor)
+    st.markdown("""
+    <div class="card-mercado">
+        <h3 style='margin:0;'>⭐ Atacadão (Mais Barato)</h3>
+        <p>Total: <b>R$ 175,00</b> | Entrega: R$ 8,00<br>
+        Previsão: <b>1h 20min</b></p>
+    </div>
+    """, unsafe_allow_html=True)
+    if st.button("COMPRAR NO ATACADÃO"):
+        st.session_state.passo = 'confirmacao'
+        st.rerun()
 
-# Verificação de Chave VIP (MACACAO2026)
-is_vip = chave.upper() == "MACACAO2026"
-total_final = (preco_custo_estimado + taxa_entrega_mercado) if is_vip else (valor_referencia + taxa_entrega_mercado)
+    # Mercado B
+    st.markdown("""
+    <div class="card-mercado" style='border-left-color: #CCC;'>
+        <h3 style='margin:0;'>Assaí</h3>
+        <p>Total: R$ 182,00 | Entrega: R$ 12,00<br>
+        Previsão: 2h</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-st.subheader("🤝 Sua Garantia de Sossego")
-st.markdown(f"""
-<div style="background-color: #fff; padding: 25px; border-radius: 15px; border: 2px solid #4a90e2; text-align: center;">
-    <p style="margin-bottom: 5px;">Total a pagar (Produtos + Frete Único):</p>
-    <h1 style="color: #1a365d; margin-top: 0;">R$ {total_final:.2f}</h1>
-    <p style="color: #718096;">Entrega oficial realizada pelo mercado na sua porta.</p>
-</div>
-""", unsafe_allow_html=True)
-
-if st.button("🚀 Confirmar Compra sem Estresse"):
-    with st.spinner('Consolidando sua lista no melhor mercado...'):
-        time.sleep(2)
-        st.balloons()
-        st.success("Pedido enviado! O mercado selecionado processará sua entrega em breve.")
-
-# Rodapé de Responsabilidade (Aviso solicitado pelo Raphael)
-st.markdown(f"""
-<div class="nota-legal">
-    <b>Aviso Importante:</b> Este aplicativo é uma plataforma de inteligência e auxílio logístico criada por Raphael Vessi. 
-    A separação, venda e <b>entrega física dos produtos</b> são de responsabilidade exclusiva do supermercado parceiro 
-    e de seus respectivos entregadores oficiais.
-</div>
-""", unsafe_allow_html=True)
+# --- TELA 5: CONFIRMAÇÃO ---
+elif st.session_state.passo == 'confirmacao':
+    st.balloons()
+    st.success("✅ Pedido Confirmado!")
+    st.markdown(f"""
+    **Resumo do Pedido:**
+    - Mercado: Atacadão
+    - Total: R$ 183,00 (Produtos + Frete Único)
+    - Previsão de chegada: **{ (datetime.datetime.now() + datetime.timedelta(minutes=80)).strftime('%H:%M') }**
+    """)
+    
+    st.info("📦 O mercado já está separando seus produtos. Você receberá uma notificação suave quando o entregador sair.")
+    
+    if st.button("Início"):
+        st.session_state.passo = 'inicial'
+        st.rerun()
