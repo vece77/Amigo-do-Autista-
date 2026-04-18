@@ -1,0 +1,63 @@
+import streamlit as st
+import pandas as pd
+
+# 1. Configuração da Página para Celular
+st.set_page_config(page_title="Grimório 5.0", layout="centered")
+
+st.title("⚔️ Grimório Digital 5.0")
+
+# 2. Sistema de Acesso (Senha)
+st.sidebar.header("Acesso")
+senha_mestre = st.sidebar.text_input("Senha do Mestre", type="password")
+
+# Define o nível de acesso
+if senha_mestre == "mestre123": # Você pode mudar essa senha
+    permissao = "Mestre"
+    st.sidebar.success("Modo Mestre Ativo (PHB + DMG + MM)")
+else:
+    permissao = "Jogador"
+    st.sidebar.info("Modo Jogador (Apenas Livro do Jogador)")
+
+# 3. Banco de Dados Simulado 
+# (Depois você pode trocar isso por um arquivo real)
+data = {
+    "Livro": ["Jogador", "Jogador", "Mestre", "Monstros", "Jogador"],
+    "Regra": ["Agarrar", "Esconder", "Armadilhas", "Beholder", "Combate"],
+    "Descricao": [
+        "Teste de Atletismo contra Atletismo ou Acrobacia do alvo.",
+        "Teste de Furtividade resistido pela Percepção Passiva.",
+        "Dano de armadilhas varia conforme o nível do grupo.",
+        "Usa raios oculares aleatórios no início do turno.",
+        "A ordem de iniciativa define quem age primeiro no turno."
+    ],
+    "Pagina": [195, 177, 120, 28, 189]
+}
+df = pd.DataFrame(data)
+
+# 4. Campo de Busca
+busca = st.text_input("Qual regra você quer consultar?", placeholder="Ex: Agarrar")
+
+if busca:
+    # Filtra os dados com base no nível de acesso
+    if permissao == "Jogador":
+        resultados = df[df['Livro'] == "Jogador"]
+    else:
+        resultados = df
+    
+    # Busca por texto (aproximada)
+    filtro = resultados[resultados['Regra'].str.contains(busca, case=False)]
+
+    if not filtro.empty:
+        st.subheader(f"Encontrei {len(filtro)} resultados:")
+        
+        # Mostra as 3 opções (ou quantas encontrar até 3)
+        for i, row in filtro.head(3).iterrows():
+            with st.expander(f"Opção {i+1}: {row['Regra']}"):
+                st.write(f"**Descrição:** {row['Descricao']}")
+                st.write(f"**Localização:** {row['Livro']}, Página {row['Pagina']}")
+    else:
+        st.warning("Nenhuma regra encontrada com esse nome.")
+
+# 5. Rodapé
+st.markdown("---")
+st.caption(f"Logado como: {permissao}")
